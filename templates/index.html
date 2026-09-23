@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Extração de Nota Fiscal</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+</head>
+
+<body>
+
+    <main class="container">
+
+        <h1>Extração de Dados de Nota Fiscal</h1>
+
+        <p>
+            Carregue uma nota fiscal em PDF
+            para extrair seus dados utilizando IA.
+        </p>
+
+        <section class="card">
+
+            <form id="formNota">
+
+                <label for="arquivo">
+                    Selecione a Nota Fiscal
+                </label>
+
+                <input
+                    type="file"
+                    id="arquivo"
+                    name="arquivo"
+                    accept="application/pdf"
+                    required
+                >
+
+                <button
+                    id="botaoExtrair"
+                    type="submit"
+                >
+                    Extrair Dados
+                </button>
+
+            </form>
+
+        </section>
+
+        <section
+            id="resultadoContainer"
+            class="card resultado"
+        >
+
+            <h2>Dados Extraídos</h2>
+
+            <p id="status">
+                Nenhuma nota processada.
+            </p>
+
+            <pre id="resultado"></pre>
+
+        </section>
+
+    </main>
+
+    <script
+        src="{{ url_for('static', filename='app.js') }}"
+    ></script>
+
+</body>
+
+</html>

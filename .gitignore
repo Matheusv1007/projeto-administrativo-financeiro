@@ -1,0 +1,22 @@
+# Variáveis de ambiente / credenciais
+.env
+
+# Ambiente virtual
+.venv/
+venv/
+
+# Cache Python
+__pycache__/
+*.pyc
+*.pyo
+
+# IDE
+.vscode/
+.idea/
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+
+# PDFs/referências locais
+Z/
