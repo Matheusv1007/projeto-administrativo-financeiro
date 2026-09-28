@@ -32,10 +32,16 @@ form {
     gap: 16px;
 }
 
-input[type="file"] {
+input[type="file"],
+input[type="password"],
+input[type="text"] {
+    width: 100%;
     padding: 12px;
     border: 1px solid #ccc;
     border-radius: 6px;
+    background: white;
+    color: #222;
+    font: inherit;
 }
 
 button {
@@ -61,4 +67,82 @@ button:disabled {
     border-radius: 8px;
     background: #111827;
     color: #e5e7eb;
+}
+
+.pagina-login {
+    display: grid;
+    min-height: 100vh;
+    place-items: center;
+}
+
+.login-container {
+    width: min(430px, 92%);
+}
+
+.login-card {
+    margin-top: 0;
+}
+
+.login-card h1 {
+    font-size: 28px;
+}
+
+.identificacao {
+    margin: 0 0 8px;
+    color: #59636e;
+    font-size: 13px;
+    font-weight: bold;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.cabecalho-aplicacao {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.form-logout {
+    display: block;
+}
+
+.campo {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+label {
+    font-weight: bold;
+}
+
+input:focus {
+    border-color: #202124;
+    outline: 2px solid rgba(32, 33, 36, 0.15);
+}
+
+.botao-secundario {
+    padding: 10px 18px;
+    border: 1px solid #202124;
+    background: transparent;
+    color: #202124;
+}
+
+.mensagem-erro {
+    padding: 12px;
+    margin: 18px 0;
+    border: 1px solid #e5a7a7;
+    border-radius: 6px;
+    background: #fff1f1;
+    color: #9b1c1c;
+}
+
+@media (max-width: 600px) {
+    .container {
+        margin: 24px auto;
+    }
+
+    .card {
+        padding: 18px;
+    }
 }
