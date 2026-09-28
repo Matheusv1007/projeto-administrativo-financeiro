@@ -89,6 +89,7 @@ Classificação da despesa
 JSON
    ↓
 Interface Web
+```
 
 ---
 
@@ -124,6 +125,9 @@ pip install -r requirements.txt
 Crie um arquivo `.env` na raiz do projeto:
 
 ```env
+APP_USERNAME=professor
+APP_PASSWORD=SUA_SENHA_AQUI
+SECRET_KEY=UMA_CHAVE_ALEATORIA_LONGA
 GEMINI_API_KEY=SUA_CHAVE_AQUI
 GEMINI_MODEL=gemini-3.5-flash-lite
 ```

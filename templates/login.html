@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Login | Processador de Nota Fiscal</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+</head>
+
+<body class="pagina-login">
+
+    <main class="login-container">
+
+        <section class="card login-card">
+
+            <p class="identificacao">Acesso restrito</p>
+
+            <h1>Processador de Nota Fiscal</h1>
+
+            <p>
+                Entre com as credenciais fornecidas para acessar
+                a aplica&ccedil;&atilde;o.
+            </p>
+
+            {% if erro %}
+                <div class="mensagem-erro" role="alert">
+                    {{ erro }}
+                </div>
+            {% endif %}
+
+            <form method="post" action="{{ url_for('login') }}">
+
+                <div class="campo">
+                    <label for="usuario">Usu&aacute;rio</label>
+
+                    <input
+                        type="text"
+                        id="usuario"
+                        name="usuario"
+                        autocomplete="username"
+                        required
+                        autofocus
+                    >
+                </div>
+
+                <div class="campo">
+                    <label for="senha">Senha</label>
+
+                    <input
+                        type="password"
+                        id="senha"
+                        name="senha"
+                        autocomplete="current-password"
+                        required
+                    >
+                </div>
+
+                <button type="submit">Entrar</button>
+
+            </form>
+
+        </section>
+
+    </main>
+
+</body>
+
+</html>

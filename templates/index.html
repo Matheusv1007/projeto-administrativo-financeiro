@@ -21,6 +21,24 @@
 
     <main class="container">
 
+        <header class="cabecalho-aplicacao">
+
+            <div>
+                <p class="identificacao">&Aacute;rea autenticada</p>
+            </div>
+
+            <form
+                class="form-logout"
+                method="post"
+                action="{{ url_for('logout') }}"
+            >
+                <button class="botao-secundario" type="submit">
+                    Sair
+                </button>
+            </form>
+
+        </header>
+
         <h1>Extração de Dados de Nota Fiscal</h1>
 
         <p>
