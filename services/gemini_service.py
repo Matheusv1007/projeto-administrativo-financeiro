@@ -20,20 +20,20 @@ class GeminiService:
     conhecer detalhes de autenticação ou configuração da API.
     """
 
-    def __init__(self):
-        # Busca a chave da API no arquivo .env
-        api_key = os.getenv("GEMINI_API_KEY")
+    def __init__(self, api_key=None):
+        # A chave pode vir da interface ou do .env local.
+        api_key = api_key or os.getenv("GEMINI_API_KEY")
 
         if not api_key:
             raise ValueError(
-                "GEMINI_API_KEY não foi encontrada no arquivo .env."
+                "A chave da API Gemini n\u00e3o foi informada."
             )
 
         # Busca o modelo configurado no .env.
-        # Caso não exista, utiliza gemini-3.8-flash.
+        # Caso nao exista, utiliza o modelo padrao do projeto.
         self.model = os.getenv(
             "GEMINI_MODEL",
-            "gemini-3.8-flash"
+            "gemini-3.5-flash-lite"
         )
 
         # Cria o cliente responsável por acessar a API Gemini
