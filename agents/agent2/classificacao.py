@@ -10,8 +10,10 @@ class Agent2:
     da nota fiscal e classificar a despesa.
     """
 
-    def __init__(self):
-        self.gemini = GeminiService()
+    def __init__(self, api_key=None):
+        self.gemini = GeminiService(
+            api_key=api_key
+        )
 
     def classificar_despesa(self, produtos):
         """

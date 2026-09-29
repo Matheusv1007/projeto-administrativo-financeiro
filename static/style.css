@@ -56,7 +56,7 @@ button {
 
 button:disabled {
     opacity: 0.6;
-    cursor: wait;
+    cursor: not-allowed;
 }
 
 .resultado pre {
@@ -114,6 +114,40 @@ button:disabled {
 
 label {
     font-weight: bold;
+}
+
+small {
+    color: #59636e;
+    line-height: 1.4;
+}
+
+.acoes-chave {
+    display: flex;
+    gap: 10px;
+}
+
+.acoes-chave button {
+    flex: 1;
+}
+
+.status-chave {
+    margin: 0;
+    color: #59636e;
+    font-size: 14px;
+}
+
+.status-chave-sucesso {
+    color: #18723c;
+    font-weight: bold;
+}
+
+.status-chave-erro {
+    color: #9b1c1c;
+    font-weight: bold;
+}
+
+input[readonly] {
+    background: #eef1f4;
 }
 
 input:focus {

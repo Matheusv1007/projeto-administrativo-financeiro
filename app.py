@@ -105,6 +105,13 @@ def index():
 @app.route("/extrair", methods=["POST"])
 @login_obrigatorio
 def extrair():
+    api_key = request.form.get("api_key", "").strip()
+
+    if not api_key:
+        return jsonify({
+            "erro": "Informe a chave da API Gemini."
+        }), 400
+
     if "arquivo" not in request.files:
         return jsonify({
             "erro": "Nenhum arquivo foi enviado."
@@ -125,13 +132,17 @@ def extrair():
     try:
         pdf_bytes = arquivo.read()
 
-        agent1 = Agent1()
+        agent1 = Agent1(
+            api_key=api_key
+        )
 
         dados = agent1.extrair_dados(
             pdf_bytes
         )
 
-        agent2 = Agent2()
+        agent2 = Agent2(
+            api_key=api_key
+        )
 
         dados["tiposDespesa"] = (
             agent2.classificar_despesa(
@@ -141,9 +152,12 @@ def extrair():
 
         return jsonify(dados)
 
-    except Exception as erro:
+    except Exception:
         return jsonify({
-            "erro": str(erro)
+            "erro": (
+                "N\u00e3o foi poss\u00edvel processar a nota fiscal. "
+                "Verifique a chave informada e tente novamente."
+            )
         }), 500
 
 

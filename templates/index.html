@@ -50,6 +50,53 @@
 
             <form id="formNota">
 
+                <div class="campo">
+                    <label for="apiKey">
+                        Chave da API Gemini
+                    </label>
+
+                    <input
+                        type="password"
+                        id="apiKey"
+                        name="api_key"
+                        autocomplete="off"
+                        spellcheck="false"
+                        placeholder="Cole sua chave aqui"
+                        required
+                    >
+
+                    <small>
+                        A chave &eacute; usada somente nesta
+                        requisi&ccedil;&atilde;o e n&atilde;o &eacute; armazenada.
+                    </small>
+
+                    <div class="acoes-chave">
+                        <button
+                            id="botaoConfirmarChave"
+                            type="button"
+                        >
+                            Confirmar chave
+                        </button>
+
+                        <button
+                            id="botaoAlterarChave"
+                            class="botao-secundario"
+                            type="button"
+                            hidden
+                        >
+                            Alterar chave
+                        </button>
+                    </div>
+
+                    <p
+                        id="statusChave"
+                        class="status-chave"
+                        aria-live="polite"
+                    >
+                        Nenhuma chave configurada.
+                    </p>
+                </div>
+
                 <label for="arquivo">
                     Selecione a Nota Fiscal
                 </label>
@@ -60,11 +107,13 @@
                     name="arquivo"
                     accept="application/pdf"
                     required
+                    disabled
                 >
 
                 <button
                     id="botaoExtrair"
                     type="submit"
+                    disabled
                 >
                     Extrair Dados
                 </button>

@@ -128,9 +128,15 @@ Crie um arquivo `.env` na raiz do projeto:
 APP_USERNAME=professor
 APP_PASSWORD=SUA_SENHA_AQUI
 SECRET_KEY=UMA_CHAVE_ALEATORIA_LONGA
-GEMINI_API_KEY=SUA_CHAVE_AQUI
 GEMINI_MODEL=gemini-3.5-flash-lite
 ```
+
+Na aplica&ccedil;&atilde;o web, a chave Gemini &eacute; informada pelo
+usu&aacute;rio depois do login. Ela &eacute; usada apenas durante a
+requisi&ccedil;&atilde;o e n&atilde;o &eacute; armazenada pelo sistema.
+
+Para executar diretamente os scripts de teste pelo terminal,
+adicione tamb&eacute;m `GEMINI_API_KEY` ao `.env` local.
 
 ### 6. Execute
 

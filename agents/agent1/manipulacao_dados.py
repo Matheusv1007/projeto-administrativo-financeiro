@@ -143,8 +143,10 @@ class Agent1:
     Agente responsável pela extração dos dados da nota fiscal.
     """
 
-    def __init__(self):
-        self.gemini = GeminiService()
+    def __init__(self, api_key=None):
+        self.gemini = GeminiService(
+            api_key=api_key
+        )
 
     def extrair_dados(self, pdf_bytes):
 
