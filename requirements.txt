@@ -2,3 +2,5 @@ flask
 google-genai
 python-dotenv
 gunicorn
+sqlalchemy
+psycopg[binary]

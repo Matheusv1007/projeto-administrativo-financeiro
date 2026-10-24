@@ -1,6 +1,9 @@
 import io
+import os
 import unittest
 from unittest.mock import patch
+
+os.environ["DATABASE_URL"] = "sqlite://"
 
 from app import app
 

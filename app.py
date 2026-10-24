@@ -14,6 +14,7 @@ from flask import (
 
 from agents.agent1.manipulacao_dados import Agent1
 from agents.agent2.classificacao import Agent2
+from database import configurar_banco
 
 
 app = Flask(__name__)
@@ -26,6 +27,8 @@ app.config["APP_USERNAME"] = os.getenv("APP_USERNAME")
 app.config["APP_PASSWORD"] = os.getenv("APP_PASSWORD")
 app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+
+configurar_banco(os.getenv("DATABASE_URL"))
 
 
 def login_obrigatorio(funcao):
