@@ -146,6 +146,19 @@ small {
     font-weight: bold;
 }
 
+.bloco-analise {
+    margin-bottom: 18px;
+}
+
+.bloco-analise h3 {
+    margin: 0 0 6px;
+    text-decoration: underline;
+}
+
+.bloco-analise p {
+    margin: 2px 0;
+}
+
 input[readonly] {
     background: #eef1f4;
 }

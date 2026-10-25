@@ -15,6 +15,7 @@ from flask import (
 from agents.agent1.manipulacao_dados import Agent1
 from agents.agent2.classificacao import Agent2
 from database import configurar_banco
+from services.lancamento_service import analisar_dados
 
 
 app = Flask(__name__)
@@ -153,8 +154,6 @@ def extrair():
             )
         )
 
-        return jsonify(dados)
-
     except Exception:
         return jsonify({
             "erro": (
@@ -162,6 +161,18 @@ def extrair():
                 "Verifique a chave informada e tente novamente."
             )
         }), 500
+
+    try:
+        analise = analisar_dados(dados)
+    except Exception:
+        return jsonify({
+            "erro": "N\u00e3o foi poss\u00edvel consultar o banco de dados."
+        }), 500
+
+    return jsonify({
+        "dados": dados,
+        "analise": analise
+    })
 
 
 if __name__ == "__main__":

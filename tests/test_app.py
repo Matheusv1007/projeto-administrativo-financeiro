@@ -114,9 +114,10 @@ class AppTestCase(unittest.TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
-            response.get_json()["tiposDespesa"],
+            response.get_json()["dados"]["tiposDespesa"],
             ["ADMINISTRATIVAS"]
         )
+        self.assertIn("analise", response.get_json())
         agent1_mock.assert_called_once_with(
             api_key="chave-temporaria"
         )
