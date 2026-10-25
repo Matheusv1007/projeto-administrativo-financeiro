@@ -15,7 +15,11 @@ from flask import (
 from agents.agent1.manipulacao_dados import Agent1
 from agents.agent2.classificacao import Agent2
 from database import configurar_banco
-from services.lancamento_service import analisar_dados
+from services.lancamento_service import (
+    DadosInvalidos,
+    analisar_dados,
+    lancar_registro
+)
 
 
 app = Flask(__name__)
@@ -31,6 +35,8 @@ app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 
 configurar_banco(os.getenv("DATABASE_URL"))
 
+ROTAS_JSON = ("/extrair", "/lancar")
+
 
 def login_obrigatorio(funcao):
     """Protege rotas que exigem uma sessao autenticada."""
@@ -38,7 +44,7 @@ def login_obrigatorio(funcao):
     @wraps(funcao)
     def funcao_protegida(*args, **kwargs):
         if not session.get("autenticado"):
-            if request.path == "/extrair":
+            if request.path in ROTAS_JSON:
                 return jsonify({
                     "erro": "Sua sess\u00e3o expirou. Fa\u00e7a login novamente."
                 }), 401
@@ -172,6 +178,33 @@ def extrair():
     return jsonify({
         "dados": dados,
         "analise": analise
+    })
+
+
+@app.route("/lancar", methods=["POST"])
+@login_obrigatorio
+def lancar():
+    corpo = request.get_json(silent=True)
+    dados = corpo.get("dados") if isinstance(corpo, dict) else None
+
+    if not isinstance(dados, dict):
+        return jsonify({
+            "erro": "Nenhum dado extra\u00eddo foi enviado."
+        }), 400
+
+    try:
+        lancar_registro(dados)
+    except DadosInvalidos as erro:
+        return jsonify({
+            "erro": str(erro)
+        }), 400
+    except Exception:
+        return jsonify({
+            "erro": "N\u00e3o foi poss\u00edvel lan\u00e7ar o registro."
+        }), 500
+
+    return jsonify({
+        "mensagem": "Registro lan\u00e7ado com sucesso."
     })
 
 

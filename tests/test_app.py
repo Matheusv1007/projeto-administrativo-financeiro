@@ -1,14 +1,49 @@
+import copy
 import io
 import os
 import unittest
+from datetime import date
+from decimal import Decimal
 from unittest.mock import patch
 
 os.environ["DATABASE_URL"] = "sqlite://"
 
+from sqlalchemy import func, select
+
 from app import app
+from database import SessionLocal, configurar_banco
+from database.modelos import (
+    Classificacao,
+    MovimentoContas,
+    ParcelaContas,
+    Pessoa
+)
+from services.lancamento_service import analisar_dados
 
 
-class AppTestCase(unittest.TestCase):
+NOTA = {
+    "fornecedor": {
+        "razaoSocial": "IGUA\u00c7U MAQUINAS LTDA",
+        "fantasia": "IGUA\u00c7U",
+        "cnpj": "11.111.111/0001-00"
+    },
+    "faturado": {
+        "nomeCompleto": "BELTRANO DA SILVA",
+        "cpf": "999.999.999-99"
+    },
+    "numeroNotaFiscal": "123",
+    "dataEmissao": "10/10/2026",
+    "descricaoProdutos": ["Filtro de \u00f3leo"],
+    "quantidadeParcelas": 1,
+    "parcelas": [
+        {"numero": 1, "dataVencimento": "10/11/2026", "valor": None}
+    ],
+    "valorTotal": 350.5,
+    "tiposDespesa": ["MANUTEN\u00c7\u00c3O E OPERA\u00c7\u00c3O"]
+}
+
+
+class BaseTestCase(unittest.TestCase):
 
     def setUp(self):
         app.config.update(
@@ -18,7 +53,11 @@ class AppTestCase(unittest.TestCase):
             APP_PASSWORD="senha-teste"
         )
 
+        self.engine = configurar_banco("sqlite://")
         self.client = app.test_client()
+
+    def tearDown(self):
+        self.engine.dispose()
 
     def fazer_login(self):
         return self.client.post(
@@ -28,6 +67,9 @@ class AppTestCase(unittest.TestCase):
                 "senha": "senha-teste"
             }
         )
+
+
+class AppTestCase(BaseTestCase):
 
     def test_index_redireciona_para_login(self):
         response = self.client.get("/")
@@ -127,6 +169,135 @@ class AppTestCase(unittest.TestCase):
 
         with self.client.session_transaction() as sessao:
             self.assertNotIn("api_key", sessao)
+
+
+class LancamentoTestCase(BaseTestCase):
+
+    def lancar(self, dados):
+        return self.client.post("/lancar", json={"dados": dados})
+
+    def contar(self, modelo):
+        with SessionLocal() as sessao:
+            return sessao.scalar(select(func.count()).select_from(modelo))
+
+    def test_lancar_sem_login_retorna_401(self):
+        response = self.lancar(NOTA)
+
+        self.assertEqual(response.status_code, 401)
+
+    def test_lancamento_cria_registros_e_consulta_passa_a_encontrar(self):
+        analise = analisar_dados(NOTA)
+
+        self.assertFalse(analise["fornecedor"]["existe"])
+        self.assertFalse(analise["faturado"]["existe"])
+        self.assertFalse(analise["despesas"][0]["existe"])
+
+        self.fazer_login()
+        response = self.lancar(NOTA)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.get_json()["mensagem"],
+            "Registro lan\u00e7ado com sucesso."
+        )
+
+        analise = analisar_dados(NOTA)
+
+        with SessionLocal() as sessao:
+            movimento = sessao.scalars(select(MovimentoContas)).one()
+
+            self.assertEqual(movimento.tipo, "APAGAR")
+            self.assertEqual(movimento.data_emissao, date(2026, 10, 10))
+            self.assertEqual(movimento.valor_total, Decimal("350.50"))
+            self.assertEqual(movimento.status, "ATIVO")
+
+            fornecedor = movimento.fornecedor_cliente
+            self.assertEqual(fornecedor.tipo, "CLIENTE-FORNECEDOR")
+            self.assertEqual(fornecedor.documento, "11111111000100")
+            self.assertEqual(fornecedor.status, "ATIVO")
+            self.assertEqual(
+                analise["fornecedor"],
+                {
+                    "razaoSocial": "IGUA\u00c7U MAQUINAS LTDA",
+                    "documento": "11.111.111/0001-00",
+                    "existe": True,
+                    "id": fornecedor.id
+                }
+            )
+
+            self.assertEqual(movimento.faturado.tipo, "FATURADO")
+            self.assertEqual(
+                analise["faturado"]["id"],
+                movimento.faturado.id
+            )
+
+            [classificacao] = movimento.classificacoes
+            self.assertEqual(classificacao.tipo, "DESPESA")
+            self.assertEqual(
+                analise["despesas"],
+                [{
+                    "descricao": "MANUTEN\u00c7\u00c3O E OPERA\u00c7\u00c3O",
+                    "existe": True,
+                    "id": classificacao.id
+                }]
+            )
+
+            [parcela] = movimento.parcelas
+            self.assertEqual(parcela.identificacao, "\u00daNICA")
+            self.assertEqual(parcela.data_vencimento, date(2026, 11, 10))
+            self.assertEqual(parcela.valor_parcela, Decimal("350.50"))
+
+    def test_novo_lancamento_reutiliza_cadastros_existentes(self):
+        self.fazer_login()
+
+        self.assertEqual(self.lancar(NOTA).status_code, 200)
+        self.assertEqual(self.lancar(NOTA).status_code, 200)
+
+        self.assertEqual(self.contar(Pessoa), 2)
+        self.assertEqual(self.contar(Classificacao), 1)
+        self.assertEqual(self.contar(MovimentoContas), 2)
+
+    def test_parcelas_com_vencimentos_distintos(self):
+        nota = copy.deepcopy(NOTA)
+        nota["parcelas"] = [
+            {"numero": 1, "dataVencimento": "10/11/2026", "valor": 175.25},
+            {"numero": 2, "dataVencimento": "10/12/2026", "valor": 175.25}
+        ]
+
+        self.fazer_login()
+        self.assertEqual(self.lancar(nota).status_code, 200)
+
+        with SessionLocal() as sessao:
+            parcelas = sessao.scalars(
+                select(ParcelaContas).order_by(ParcelaContas.id)
+            ).all()
+
+        self.assertEqual(
+            [
+                (p.identificacao, p.data_vencimento, p.valor_parcela)
+                for p in parcelas
+            ],
+            [
+                ("1/2", date(2026, 11, 10), Decimal("175.25")),
+                ("2/2", date(2026, 12, 10), Decimal("175.25"))
+            ]
+        )
+
+    def test_sem_classificacao_nao_lanca_nada(self):
+        nota = copy.deepcopy(NOTA)
+        nota["tiposDespesa"] = []
+
+        self.fazer_login()
+        response = self.lancar(nota)
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn(
+            "classifica\u00e7\u00e3o da despesa",
+            response.get_json()["erro"]
+        )
+        self.assertEqual(self.contar(Pessoa), 0)
+        self.assertEqual(self.contar(MovimentoContas), 0)
+
 
 if __name__ == "__main__":
     unittest.main()

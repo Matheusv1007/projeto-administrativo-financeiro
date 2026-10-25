@@ -12,6 +12,7 @@ const resultado = document.getElementById("resultado");
 const statusTexto = document.getElementById("status");
 const botao = document.getElementById("botaoExtrair");
 const analiseContainer = document.getElementById("analise");
+const statusLancamento = document.getElementById("statusLancamento");
 
 let chaveConfirmada = false;
 
@@ -117,6 +118,46 @@ function mostrarAnalise(analise) {
     });
 }
 
+function mostrarStatusLancamento(texto, classe = "") {
+    statusLancamento.textContent = texto;
+    statusLancamento.className = `status-lancamento ${classe}`.trim();
+}
+
+async function lancarRegistro(dados) {
+    mostrarStatusLancamento("Lan\u00e7ando registro...");
+
+    try {
+        const response = await fetch("/lancar", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ dados })
+        });
+
+        const resposta = await response.json();
+
+        if (response.status === 401) {
+            window.location.href = "/login";
+            return;
+        }
+
+        if (!response.ok) {
+            throw new Error(resposta.erro);
+        }
+
+        mostrarStatusLancamento(
+            resposta.mensagem,
+            "status-chave-sucesso"
+        );
+    } catch (erro) {
+        mostrarStatusLancamento(
+            erro.message || "N\u00e3o foi poss\u00edvel lan\u00e7ar o registro.",
+            "status-chave-erro"
+        );
+    }
+}
+
 form.addEventListener("submit", async (event) => {
     event.preventDefault();
 
@@ -147,6 +188,7 @@ form.addEventListener("submit", async (event) => {
 
         resultado.textContent = "";
         analiseContainer.replaceChildren();
+        mostrarStatusLancamento("");
 
         const response = await fetch("/extrair", {
             method: "POST",
@@ -173,6 +215,8 @@ form.addEventListener("submit", async (event) => {
             JSON.stringify(dados.dados, null, 2);
 
         mostrarAnalise(dados.analise);
+
+        await lancarRegistro(dados.dados);
 
     } catch (erro) {
 

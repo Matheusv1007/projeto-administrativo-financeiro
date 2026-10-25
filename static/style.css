@@ -159,6 +159,11 @@ small {
     margin: 2px 0;
 }
 
+.status-lancamento {
+    margin: 0;
+    font-size: 16px;
+}
+
 input[readonly] {
     background: #eef1f4;
 }
