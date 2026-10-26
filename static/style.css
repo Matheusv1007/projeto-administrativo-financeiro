@@ -1,137 +1,94 @@
-* {
-    box-sizing: border-box;
-}
-
 body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: #f4f5f7;
-    color: #222;
+    background: #f4f6f9;
 }
 
-.container {
-    width: min(900px, 92%);
-    margin: 50px auto;
-}
+/* Layout com menu lateral */
 
-h1 {
-    margin-bottom: 8px;
-}
-
-.card {
-    background: white;
-    padding: 24px;
-    margin-top: 24px;
-    border-radius: 10px;
-    border: 1px solid #ddd;
-}
-
-form {
+.layout {
     display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
-input[type="file"],
-input[type="password"],
-input[type="text"] {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    background: white;
-    color: #222;
-    font: inherit;
-}
-
-button {
-    padding: 14px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: bold;
-    background: #202124;
-    color: white;
-}
-
-button:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
-.resultado pre {
-    min-height: 150px;
-    padding: 18px;
-    overflow-x: auto;
-    white-space: pre-wrap;
-    border-radius: 8px;
-    background: #111827;
-    color: #e5e7eb;
-}
-
-.pagina-login {
-    display: grid;
     min-height: 100vh;
-    place-items: center;
 }
 
-.login-container {
-    width: min(430px, 92%);
+.sidebar {
+    width: 260px;
+    flex-shrink: 0;
+    background: #343a40;
+    color: #fff;
 }
 
-.login-card {
-    margin-top: 0;
+.sidebar-topo {
+    padding: 24px 16px;
+    text-align: center;
+    border-bottom: 1px solid #4b545c;
 }
 
-.login-card h1 {
-    font-size: 28px;
+.sidebar-marca {
+    font-size: 26px;
+    margin-bottom: 16px;
 }
 
-.identificacao {
-    margin: 0 0 8px;
-    color: #59636e;
-    font-size: 13px;
+.sidebar-avatar {
+    font-size: 40px;
+}
+
+.sidebar-logado {
+    color: #8a939b;
+    font-size: 14px;
+}
+
+.sidebar-usuario {
     font-weight: bold;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    margin-bottom: 16px;
 }
 
-.cabecalho-aplicacao {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-}
-
-.form-logout {
-    display: block;
-}
-
-.campo {
+.sidebar-menu {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    padding-bottom: 24px;
 }
 
-label {
-    font-weight: bold;
+.sidebar-secao {
+    padding: 16px 16px 6px;
+    color: #6c757d;
+    font-size: 13px;
+    text-align: center;
 }
 
-small {
-    color: #59636e;
-    line-height: 1.4;
+.sidebar-link {
+    padding: 12px 16px;
+    color: #e9ecef;
+    text-decoration: none;
 }
 
-.acoes-chave {
-    display: flex;
-    gap: 10px;
+.sidebar-link i {
+    margin-right: 8px;
 }
 
-.acoes-chave button {
+.sidebar-link:hover,
+.sidebar-link.ativo {
+    background: #4b545c;
+    color: #fff;
+}
+
+.conteudo {
     flex: 1;
+    min-width: 0;
+    padding: 32px;
 }
+
+.titulo-pagina {
+    margin-bottom: 24px;
+}
+
+.titulo-card {
+    color: #4e73df;
+    font-weight: 500;
+}
+
+/* Processar nota fiscal */
 
 .status-chave {
-    margin: 0;
+    margin: 8px 0 0;
     color: #59636e;
     font-size: 14px;
 }
@@ -146,12 +103,26 @@ small {
     font-weight: bold;
 }
 
+input[readonly] {
+    background: #eef1f4;
+}
+
+.resultado-json {
+    min-height: 150px;
+    padding: 18px;
+    white-space: pre-wrap;
+    border-radius: 8px;
+    background: #111827;
+    color: #e5e7eb;
+}
+
 .bloco-analise {
     margin-bottom: 18px;
 }
 
 .bloco-analise h3 {
     margin: 0 0 6px;
+    font-size: 18px;
     text-decoration: underline;
 }
 
@@ -164,37 +135,29 @@ small {
     font-size: 16px;
 }
 
-input[readonly] {
-    background: #eef1f4;
+/* Login */
+
+.pagina-login {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
 }
 
-input:focus {
-    border-color: #202124;
-    outline: 2px solid rgba(32, 33, 36, 0.15);
+.login-container {
+    width: min(430px, 92%);
 }
 
-.botao-secundario {
-    padding: 10px 18px;
-    border: 1px solid #202124;
-    background: transparent;
-    color: #202124;
-}
-
-.mensagem-erro {
-    padding: 12px;
-    margin: 18px 0;
-    border: 1px solid #e5a7a7;
-    border-radius: 6px;
-    background: #fff1f1;
-    color: #9b1c1c;
-}
-
-@media (max-width: 600px) {
-    .container {
-        margin: 24px auto;
+@media (max-width: 768px) {
+    .layout {
+        flex-direction: column;
     }
 
-    .card {
-        padding: 18px;
+    .sidebar {
+        width: 100%;
+    }
+
+    .conteudo {
+        padding: 16px;
     }
 }

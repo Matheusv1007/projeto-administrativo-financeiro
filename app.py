@@ -88,6 +88,7 @@ def login():
             if usuario_valido and senha_valida:
                 session.clear()
                 session["autenticado"] = True
+                session["usuario"] = usuario
 
                 return redirect(url_for("index"))
 
