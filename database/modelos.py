@@ -13,6 +13,7 @@ from sqlalchemy.orm import DeclarativeBase, relationship
 
 
 STATUS_ATIVO = "ATIVO"
+STATUS_INATIVO = "INATIVO"
 
 TIPO_PESSOA_FORNECEDOR = "CLIENTE-FORNECEDOR"
 TIPO_PESSOA_FATURADO = "FATURADO"

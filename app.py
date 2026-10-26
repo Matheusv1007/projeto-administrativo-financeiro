@@ -14,6 +14,7 @@ from flask import (
 
 from agents.agent1.manipulacao_dados import Agent1
 from agents.agent2.classificacao import Agent2
+from cadastros import cadastros
 from database import configurar_banco
 from services.lancamento_service import (
     DadosInvalidos,
@@ -34,6 +35,8 @@ app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 
 configurar_banco(os.getenv("DATABASE_URL"))
+
+app.register_blueprint(cadastros)
 
 ROTAS_JSON = ("/extrair", "/lancar")
 

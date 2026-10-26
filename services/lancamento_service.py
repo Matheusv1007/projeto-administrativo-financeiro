@@ -34,7 +34,7 @@ def _texto(valor):
     return valor or None
 
 
-def _somente_numeros(valor):
+def somente_numeros(valor):
     texto = _texto(valor)
 
     if not texto:
@@ -43,7 +43,7 @@ def _somente_numeros(valor):
     return re.sub(r"\D", "", texto) or None
 
 
-def _formatar_documento(documento):
+def formatar_documento(documento):
     if documento and len(documento) == 14:
         return (
             f"{documento[:2]}.{documento[2:5]}.{documento[5:8]}/"
@@ -86,7 +86,7 @@ def _pessoa(dados, chave_nome, chave_documento):
 
     return (
         _texto(pessoa.get(chave_nome)),
-        _somente_numeros(pessoa.get(chave_documento))
+        somente_numeros(pessoa.get(chave_documento))
     )
 
 
@@ -132,7 +132,7 @@ def _resultado_pessoa(sessao, tipo, razao_social, documento):
 
     return {
         "razaoSocial": razao_social,
-        "documento": _formatar_documento(documento),
+        "documento": formatar_documento(documento),
         "existe": pessoa is not None,
         "id": pessoa.id if pessoa else None
     }

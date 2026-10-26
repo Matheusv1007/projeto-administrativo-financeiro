@@ -299,5 +299,87 @@ class LancamentoTestCase(BaseTestCase):
         self.assertEqual(self.contar(MovimentoContas), 0)
 
 
+class CadastrosTestCase(BaseTestCase):
+
+    URL = "/pessoas/clientes-fornecedores"
+
+    def setUp(self):
+        super().setUp()
+        self.fazer_login()
+
+    def criar_pessoa(self, razao_social, documento):
+        return self.client.post(
+            self.URL + "/novo",
+            data={"razao_social": razao_social, "documento": documento}
+        )
+
+    def status_da_pessoa(self, razao_social):
+        with SessionLocal() as sessao:
+            return sessao.scalars(
+                select(Pessoa.status)
+                .where(Pessoa.razao_social == razao_social)
+            ).one()
+
+    def test_cadastros_exigem_login(self):
+        self.client.post("/logout")
+
+        response = self.client.get(self.URL + "?todos=1")
+
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(response.location.endswith("/login"))
+
+    def test_tabela_inicia_vazia_e_todos_traz_somente_ativos(self):
+        self.criar_pessoa("ALFA LTDA", "11.111.111/0001-11")
+        self.criar_pessoa("BETA LTDA", "22.222.222/0001-22")
+        self.assertEqual(self.status_da_pessoa("ALFA LTDA"), "ATIVO")
+
+        with SessionLocal() as sessao:
+            beta = sessao.scalars(
+                select(Pessoa.id).where(Pessoa.razao_social == "BETA LTDA")
+            ).one()
+
+        self.client.post(f"{self.URL}/{beta}/excluir")
+
+        inicial = self.client.get(self.URL).get_data(as_text=True)
+        todos = self.client.get(self.URL + "?todos=1").get_data(as_text=True)
+
+        self.assertNotIn("ALFA LTDA", inicial)
+        self.assertIn("ALFA LTDA", todos)
+        self.assertNotIn("BETA LTDA", todos)
+
+    def test_excluir_inativa_e_reativar_volta_a_ativo(self):
+        self.criar_pessoa("ALFA LTDA", "11.111.111/0001-11")
+
+        with SessionLocal() as sessao:
+            alfa = sessao.scalars(select(Pessoa.id)).one()
+
+        self.client.post(f"{self.URL}/{alfa}/excluir")
+
+        self.assertEqual(self.contar_pessoas(), 1)
+        self.assertEqual(self.status_da_pessoa("ALFA LTDA"), "INATIVO")
+
+        busca = self.client.get(self.URL + "?q=alfa").get_data(as_text=True)
+        self.assertIn("Reativar", busca)
+
+        self.client.post(f"{self.URL}/{alfa}/reativar")
+
+        self.assertEqual(self.status_da_pessoa("ALFA LTDA"), "ATIVO")
+
+    def contar_pessoas(self):
+        with SessionLocal() as sessao:
+            return sessao.scalar(select(func.count()).select_from(Pessoa))
+
+    def test_busca_exige_todos_os_termos(self):
+        self.criar_pessoa("ALFA COMERCIO LTDA", "11.111.111/0001-11")
+        self.criar_pessoa("ALFA SERVICOS LTDA", "22.222.222/0001-22")
+
+        pagina = self.client.get(
+            self.URL + "?q=alfa+22222222"
+        ).get_data(as_text=True)
+
+        self.assertIn("ALFA SERVICOS LTDA", pagina)
+        self.assertNotIn("ALFA COMERCIO LTDA", pagina)
+
+
 if __name__ == "__main__":
     unittest.main()

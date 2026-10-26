@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% set acao = "Editar" if editando else config.get("artigo_novo", "Novo") %}
+
+{% block titulo %}{{ acao }} {{ config.singular }}{% endblock %}
+
+{% block conteudo %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="titulo-pagina mb-0">
+            {{ acao }} {{ config.singular }}
+        </h2>
+
+        <a class="btn btn-secondary" href="{{ url_lista }}">
+            <i class="bi bi-arrow-left"></i> Voltar
+        </a>
+    </div>
+
+    <section class="card shadow-sm">
+        <div class="card-header">
+            <span class="titulo-card">Formul&aacute;rio de {{ config.singular }}</span>
+        </div>
+
+        <div class="card-body">
+            {% if erros %}
+                <div class="alert alert-danger" role="alert">
+                    <ul class="mb-0">
+                        {% for erro in erros %}
+                            <li>{{ erro }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+
+            <form method="post" novalidate>
+                {# O campo STATUS fica oculto: no CREATE nasce ATIVO e no UPDATE nao e alterado. #}
+                {% block campos %}{% endblock %}
+
+                <div class="mt-4">
+                    <button class="btn btn-primary" type="submit">
+                        <i class="bi bi-floppy"></i> Salvar
+                    </button>
+
+                    <a class="btn btn-secondary" href="{{ url_lista }}">
+                        <i class="bi bi-x-lg"></i> Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </section>
+{% endblock %}

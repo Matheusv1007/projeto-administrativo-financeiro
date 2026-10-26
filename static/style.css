@@ -85,6 +85,23 @@ body {
     font-weight: 500;
 }
 
+/* Listagens */
+
+.botao-busca {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 90px;
+}
+
+.link-ordem {
+    font-weight: bold;
+}
+
+.linha-inativa td {
+    color: #8a939b;
+}
+
 /* Processar nota fiscal */
 
 .status-chave {
