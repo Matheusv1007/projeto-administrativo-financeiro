@@ -202,6 +202,10 @@ def _obter_ou_criar_despesa(sessao, descricao):
     return classificacao
 
 
+def identificacao_parcela(numero, quantidade):
+    return "\u00daNICA" if quantidade == 1 else f"{numero}/{quantidade}"
+
+
 def _montar_parcelas(dados, valor_total):
     parcelas = [
         parcela
@@ -223,10 +227,7 @@ def _montar_parcelas(dados, valor_total):
             valor = valor_total
 
         resultado.append(ParcelaContas(
-            identificacao=(
-                "\u00daNICA" if quantidade == 1
-                else f"{numero}/{quantidade}"
-            ),
+            identificacao=identificacao_parcela(numero, quantidade),
             data_vencimento=_data(parcela.get("dataVencimento")),
             valor_parcela=valor
         ))

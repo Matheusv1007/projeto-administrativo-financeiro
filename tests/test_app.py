@@ -380,6 +380,62 @@ class CadastrosTestCase(BaseTestCase):
         self.assertIn("ALFA SERVICOS LTDA", pagina)
         self.assertNotIn("ALFA COMERCIO LTDA", pagina)
 
+    def test_conta_com_parcelas_de_vencimento_repetido_e_recusada(self):
+        self.criar_pessoa("ALFA LTDA", "11.111.111/0001-11")
+        self.client.post(
+            "/pessoas/faturados/novo",
+            data={"razao_social": "FULANO", "documento": ""}
+        )
+        self.client.post(
+            "/classificacoes/tipos-despesa/novo",
+            data={"descricao": "ADMINISTRATIVAS"}
+        )
+
+        with SessionLocal() as sessao:
+            fornecedor, faturado = sessao.scalars(
+                select(Pessoa.id).order_by(Pessoa.id)
+            ).all()
+            despesa = sessao.scalars(select(Classificacao.id)).one()
+
+        dados = {
+            "id_pessoa": fornecedor,
+            "id_faturado": faturado,
+            "valor_total": "200.00",
+            "classificacoes": [despesa],
+            "parcela_vencimento": ["2026-11-10", "2026-11-10"],
+            "parcela_valor": ["100.00", "100.00"]
+        }
+
+        response = self.client.post("/contas/pagar/novo", data=dados)
+
+        self.assertIn(
+            "datas de vencimento distintas",
+            response.get_data(as_text=True)
+        )
+        self.assertEqual(self.contar_movimentos(), 0)
+
+        dados["parcela_vencimento"] = ["2026-11-10", "2026-12-10"]
+        response = self.client.post("/contas/pagar/novo", data=dados)
+
+        self.assertEqual(response.status_code, 302)
+
+        with SessionLocal() as sessao:
+            movimento = sessao.scalars(select(MovimentoContas)).one()
+
+            self.assertEqual(movimento.tipo, "APAGAR")
+            self.assertEqual(movimento.status, "ATIVO")
+            self.assertEqual(
+                [p.identificacao for p in movimento.parcelas],
+                ["1/2", "2/2"]
+            )
+
+    def contar_movimentos(self):
+        with SessionLocal() as sessao:
+            return sessao.scalar(
+                select(func.count()).select_from(MovimentoContas)
+            )
+
+
 
 if __name__ == "__main__":
     unittest.main()

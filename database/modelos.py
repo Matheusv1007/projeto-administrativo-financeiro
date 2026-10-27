@@ -11,7 +11,6 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import DeclarativeBase, relationship
 
-
 STATUS_ATIVO = "ATIVO"
 STATUS_INATIVO = "INATIVO"
 
@@ -20,6 +19,7 @@ TIPO_PESSOA_FATURADO = "FATURADO"
 TIPO_CLASSIFICACAO_DESPESA = "DESPESA"
 TIPO_CLASSIFICACAO_RECEITA = "RECEITA"
 TIPO_MOVIMENTO_APAGAR = "APAGAR"
+TIPO_MOVIMENTO_ARECEBER = "ARECEBER"
 
 
 class Base(DeclarativeBase):
@@ -105,7 +105,9 @@ class MovimentoContas(Base):
     )
     parcelas = relationship(
         "ParcelaContas",
-        back_populates="movimento"
+        back_populates="movimento",
+        cascade="all, delete-orphan",
+        order_by="ParcelaContas.id"
     )
 
 

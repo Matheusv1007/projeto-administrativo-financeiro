@@ -28,6 +28,10 @@
             ("bi-person-vcard", "Faturados", url_for("cadastros.listar_pessoas", slug="faturados")),
             ("bi-tags", "Tipos de Despesa", url_for("cadastros.listar_classificacoes", slug="tipos-despesa")),
             ("bi-tags-fill", "Tipos de Receita", url_for("cadastros.listar_classificacoes", slug="tipos-receita"))
+        ]),
+        ("CONTAS", [
+            ("bi-cash-stack", "Contas a Pagar", url_for("cadastros.listar_contas", slug="pagar")),
+            ("bi-piggy-bank", "Contas a Receber", url_for("cadastros.listar_contas", slug="receber"))
         ])
     ] %}
 

@@ -21,6 +21,31 @@ Na segunda etapa, após a extração, o sistema analisa os dados no banco de dad
 6. cria o registro do movimento (contas a pagar) e suas parcelas;
 7. informa ao usuário que o registro foi lançado com sucesso.
 
+Também foram implementadas as funcionalidades de cadastro listadas no documento, seguindo a recomendação de layout:
+
+| Funcionalidade | Tela |
+|---|---|
+| MANTER FORNECEDOR / MANTER CLIENTE (PESSOAS) | Clientes / Fornecedores |
+| MANTER FATURADO (PESSOAS) | Faturados |
+| MANTER TIPO DE DESPESA (CLASSIFICAÇÃO) | Tipos de Despesa |
+| MANTER TIPO DE RECEITA (CLASSIFICAÇÃO) | Tipos de Receita |
+| REGISTRAR CONTAS A PAGAR | Contas a Pagar |
+| REGISTRAR CONTAS A RECEBER | Contas a Receber |
+
+Em todas as telas:
+
+- a tabela de registros inicia vazia;
+- os dados são carregados pela **Busca** ou por **Todos**;
+- **Todos** carrega somente registros com status `ATIVO`;
+- clicar no título de uma coluna ordena a tabela por ela;
+- a busca aceita mais de um termo (todos precisam ser encontrados);
+- as ações da tabela são **Editar** e **Excluir** (lógico);
+- no cadastro e na edição o campo `STATUS` fica oculto (o cadastro nasce `ATIVO`);
+- **Excluir** altera o `STATUS` para `INATIVO` (nenhum registro é apagado);
+- registros inativos aparecem na busca com a ação **Reativar**.
+
+Contas a pagar e a receber podem ter uma ou mais classificações (tipos de despesa ou de receita) e uma ou mais parcelas, com datas de vencimento distintas.
+
 ---
 
 ## Tecnologias utilizadas
@@ -34,6 +59,7 @@ Na segunda etapa, após a extração, o sistema analisa os dados no banco de dad
 - python-dotenv
 - SQLAlchemy
 - PostgreSQL (Render) / SQLite (local)
+- Bootstrap 5
 
 ---
 
@@ -92,9 +118,9 @@ Entidades afetadas (`database/modelos.py`):
 
 | Tabela | Conteúdo gravado |
 |---|---|
-| `pessoas` | Tipo `CLIENTE-FORNECEDOR` (fornecedor) ou `FATURADO`, razão social, fantasia, CPF/CNPJ, status |
-| `classificacao` | Tipo `DESPESA`, descrição (ex.: `MANUTENÇÃO E OPERAÇÃO`), status |
-| `movimentocontas` | Tipo `APAGAR`, número da nota, data de emissão, descrição dos produtos, valor total, status, fornecedor e faturado |
+| `pessoas` | Tipo `CLIENTE-FORNECEDOR` (cliente/fornecedor) ou `FATURADO`, razão social, fantasia, CPF/CNPJ, status |
+| `classificacao` | Tipo `DESPESA` ou `RECEITA`, descrição (ex.: `MANUTENÇÃO E OPERAÇÃO`), status |
+| `movimentocontas` | Tipo `APAGAR` ou `ARECEBER`, número da nota, data de emissão, descrição, valor total, status, cliente/fornecedor e faturado |
 | `parcelacontas` | Identificação (`ÚNICA` ou `1/2`, `2/2`...), data de vencimento, valor da parcela |
 | `movimentocontas_classificacao` | Classificações do movimento (um movimento pode ter uma ou mais) |
 
