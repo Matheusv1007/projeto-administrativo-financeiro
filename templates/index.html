@@ -10,6 +10,21 @@
         para extrair seus dados utilizando IA.
     </p>
 
+    <div class="alert alert-secondary py-2" role="status">
+        <i class="bi bi-github"></i>
+        C&oacute;digo da &uacute;ltima atualiza&ccedil;&atilde;o no GitHub:
+        {% if ultima_atualizacao %}
+            <a
+                class="fw-bold font-monospace"
+                href="{{ repositorio }}/commit/{{ ultima_atualizacao }}"
+                target="_blank"
+                rel="noopener"
+            >{{ ultima_atualizacao[:7] }}</a>
+        {% else %}
+            <span class="fw-bold">n&atilde;o dispon&iacute;vel</span>
+        {% endif %}
+    </div>
+
     <section class="card shadow-sm mb-4">
         <div class="card-header">
             <span class="titulo-card">Extra&ccedil;&atilde;o de Dados de Nota Fiscal</span>
