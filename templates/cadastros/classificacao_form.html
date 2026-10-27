@@ -1,0 +1,19 @@
+{% extends "cadastros/form_base.html" %}
+
+{% set url_lista = url_for("cadastros.listar_classificacoes", slug=slug) %}
+
+{% block campos %}
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label class="form-label" for="descricao">Descri&ccedil;&atilde;o</label>
+            <input
+                class="form-control"
+                id="descricao"
+                name="descricao"
+                value="{{ form.descricao or '' }}"
+                maxlength="150"
+                required
+            >
+        </div>
+    </div>
+{% endblock %}

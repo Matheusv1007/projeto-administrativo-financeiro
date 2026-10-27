@@ -25,7 +25,9 @@
     {% set menu = [
         ("CADASTROS", [
             ("bi-truck", "Clientes / Fornecedores", url_for("cadastros.listar_pessoas", slug="clientes-fornecedores")),
-            ("bi-person-vcard", "Faturados", url_for("cadastros.listar_pessoas", slug="faturados"))
+            ("bi-person-vcard", "Faturados", url_for("cadastros.listar_pessoas", slug="faturados")),
+            ("bi-tags", "Tipos de Despesa", url_for("cadastros.listar_classificacoes", slug="tipos-despesa")),
+            ("bi-tags-fill", "Tipos de Receita", url_for("cadastros.listar_classificacoes", slug="tipos-receita"))
         ])
     ] %}
 

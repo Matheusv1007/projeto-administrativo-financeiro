@@ -8,14 +8,17 @@ from flask import (
     session,
     url_for
 )
-from sqlalchemy import or_, select
+from sqlalchemy import func, or_, select
 
 from database import SessionLocal
 from database.modelos import (
     STATUS_ATIVO,
     STATUS_INATIVO,
+    TIPO_CLASSIFICACAO_DESPESA,
+    TIPO_CLASSIFICACAO_RECEITA,
     TIPO_PESSOA_FATURADO,
     TIPO_PESSOA_FORNECEDOR,
+    Classificacao,
     Pessoa
 )
 from services.lancamento_service import formatar_documento, somente_numeros
@@ -36,6 +39,21 @@ PESSOAS = {
         "titulo": "Faturados",
         "singular": "Faturado",
         "novo": "Inserir Novo Faturado"
+    }
+}
+
+CLASSIFICACOES = {
+    "tipos-despesa": {
+        "tipo": TIPO_CLASSIFICACAO_DESPESA,
+        "titulo": "Tipos de Despesa",
+        "singular": "Tipo de Despesa",
+        "novo": "Inserir Novo Tipo de Despesa"
+    },
+    "tipos-receita": {
+        "tipo": TIPO_CLASSIFICACAO_RECEITA,
+        "titulo": "Tipos de Receita",
+        "singular": "Tipo de Receita",
+        "novo": "Inserir Novo Tipo de Receita"
     }
 }
 
@@ -354,5 +372,181 @@ def reativar_pessoa(slug, registro_id):
         registro_id,
         STATUS_ATIVO,
         url_for("cadastros.listar_pessoas", slug=slug),
+        tipo=config["tipo"]
+    )
+
+
+# ---------------------------------------------------------------
+# MANTER CLASSIFICACAO (Tipos de Despesa e Tipos de Receita)
+# ---------------------------------------------------------------
+
+def _filtro_classificacao(termo):
+    return Classificacao.descricao.ilike(f"%{termo}%")
+
+
+@cadastros.route("/classificacoes/<slug>")
+def listar_classificacoes(slug):
+    config = _config(CLASSIFICACOES, slug)
+    parametros = _parametros_lista()
+
+    with SessionLocal() as sessao:
+        registros = _listar(
+            sessao,
+            select(Classificacao).where(
+                Classificacao.tipo == config["tipo"]
+            ),
+            Classificacao,
+            _filtro_classificacao,
+            {"descricao": Classificacao.descricao},
+            parametros
+        )
+
+    linhas = None if registros is None else [
+        _linha(
+            classificacao,
+            [classificacao.descricao],
+            "classificacao",
+            slug=slug
+        )
+        for classificacao in registros
+    ]
+
+    return _renderizar_lista(
+        config,
+        [("Descri\u00e7\u00e3o", "descricao")],
+        linhas,
+        parametros,
+        "Buscar por descri\u00e7\u00e3o...",
+        url_for("cadastros.novo_classificacao", slug=slug)
+    )
+
+
+def _salvar_classificacao(config, slug, classificacao_id=None):
+    form = {"descricao": request.form.get("descricao", "").strip()}
+    erros = []
+
+    if not form["descricao"]:
+        erros.append("Informe a descri\u00e7\u00e3o.")
+
+    with SessionLocal.begin() as sessao:
+        if not erros:
+            duplicado = sessao.scalars(
+                select(Classificacao.id)
+                .where(Classificacao.tipo == config["tipo"])
+                .where(
+                    func.upper(Classificacao.descricao)
+                    == form["descricao"].upper()
+                )
+                .where(Classificacao.id != (classificacao_id or 0))
+            ).first()
+
+            if duplicado:
+                erros.append("J\u00e1 existe um cadastro com esta descri\u00e7\u00e3o.")
+
+        if erros:
+            return render_template(
+                "cadastros/classificacao_form.html",
+                config=config,
+                slug=slug,
+                form=form,
+                erros=erros,
+                editando=classificacao_id is not None
+            )
+
+        if classificacao_id is None:
+            classificacao = Classificacao(
+                tipo=config["tipo"],
+                status=STATUS_ATIVO
+            )
+            sessao.add(classificacao)
+        else:
+            classificacao = _obter(
+                sessao,
+                Classificacao,
+                classificacao_id,
+                tipo=config["tipo"]
+            )
+
+        classificacao.descricao = form["descricao"]
+
+    flash("Registro salvo com sucesso.", "success")
+
+    return redirect(url_for("cadastros.listar_classificacoes", slug=slug))
+
+
+@cadastros.route("/classificacoes/<slug>/novo", methods=["GET", "POST"])
+def novo_classificacao(slug):
+    config = _config(CLASSIFICACOES, slug)
+
+    if request.method == "POST":
+        return _salvar_classificacao(config, slug)
+
+    return render_template(
+        "cadastros/classificacao_form.html",
+        config=config,
+        slug=slug,
+        form={},
+        erros=[],
+        editando=False
+    )
+
+
+@cadastros.route(
+    "/classificacoes/<slug>/<int:registro_id>/editar",
+    methods=["GET", "POST"]
+)
+def editar_classificacao(slug, registro_id):
+    config = _config(CLASSIFICACOES, slug)
+
+    if request.method == "POST":
+        return _salvar_classificacao(config, slug, registro_id)
+
+    with SessionLocal() as sessao:
+        classificacao = _obter(
+            sessao,
+            Classificacao,
+            registro_id,
+            tipo=config["tipo"]
+        )
+        form = {"descricao": classificacao.descricao}
+
+    return render_template(
+        "cadastros/classificacao_form.html",
+        config=config,
+        slug=slug,
+        form=form,
+        erros=[],
+        editando=True
+    )
+
+
+@cadastros.route(
+    "/classificacoes/<slug>/<int:registro_id>/excluir",
+    methods=["POST"]
+)
+def excluir_classificacao(slug, registro_id):
+    config = _config(CLASSIFICACOES, slug)
+
+    return _alterar_status(
+        Classificacao,
+        registro_id,
+        STATUS_INATIVO,
+        url_for("cadastros.listar_classificacoes", slug=slug),
+        tipo=config["tipo"]
+    )
+
+
+@cadastros.route(
+    "/classificacoes/<slug>/<int:registro_id>/reativar",
+    methods=["POST"]
+)
+def reativar_classificacao(slug, registro_id):
+    config = _config(CLASSIFICACOES, slug)
+
+    return _alterar_status(
+        Classificacao,
+        registro_id,
+        STATUS_ATIVO,
+        url_for("cadastros.listar_classificacoes", slug=slug),
         tipo=config["tipo"]
     )
