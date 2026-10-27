@@ -234,3 +234,5 @@ python -m unittest tests.test_app
 2. Copie a **Internal Database URL** do banco.
 3. No serviço web, em **Environment**, adicione `DATABASE_URL` com essa URL.
 4. Faça o deploy da branch atualizada. As tabelas são criadas na primeira inicialização.
+
+A tela principal mostra o **código da última atualização no GitHub** (hash do commit em execução, com link para o commit). No Render ele vem da variável `RENDER_GIT_COMMIT`, definida automaticamente a cada deploy; localmente é lido com `git rev-parse HEAD`.

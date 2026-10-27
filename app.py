@@ -1,5 +1,6 @@
 import os
 import secrets
+import subprocess
 from functools import wraps
 
 from flask import (
@@ -39,6 +40,36 @@ configurar_banco(os.getenv("DATABASE_URL"))
 app.register_blueprint(cadastros)
 
 ROTAS_JSON = ("/extrair", "/lancar")
+
+REPOSITORIO_GITHUB = (
+    "https://github.com/Matheusv1007/projeto-administrativo-financeiro"
+)
+
+
+def codigo_ultima_atualizacao():
+    """
+    Commit publicado no GitHub que esta em execucao.
+    No Render vem de RENDER_GIT_COMMIT; localmente, do git.
+    """
+
+    codigo = os.getenv("RENDER_GIT_COMMIT")
+
+    if codigo:
+        return codigo
+
+    try:
+        return subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            cwd=os.path.dirname(os.path.abspath(__file__)),
+            capture_output=True,
+            text=True,
+            check=True
+        ).stdout.strip() or None
+    except (OSError, subprocess.CalledProcessError):
+        return None
+
+
+ULTIMA_ATUALIZACAO = codigo_ultima_atualizacao()
 
 
 def login_obrigatorio(funcao):
@@ -113,7 +144,11 @@ def logout():
 @app.route("/")
 @login_obrigatorio
 def index():
-    return render_template("index.html")
+    return render_template(
+        "index.html",
+        ultima_atualizacao=ULTIMA_ATUALIZACAO,
+        repositorio=REPOSITORIO_GITHUB
+    )
 
 
 @app.route("/extrair", methods=["POST"])
