@@ -1,0 +1,41 @@
+{% extends "cadastros/form_base.html" %}
+
+{% set url_lista = url_for("cadastros.listar_pessoas", slug=slug) %}
+
+{% block campos %}
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label class="form-label" for="razao_social">Raz&atilde;o Social / Nome</label>
+            <input
+                class="form-control"
+                id="razao_social"
+                name="razao_social"
+                value="{{ form.razao_social or '' }}"
+                maxlength="255"
+                required
+            >
+        </div>
+
+        <div class="col-md-6">
+            <label class="form-label" for="fantasia">Fantasia</label>
+            <input
+                class="form-control"
+                id="fantasia"
+                name="fantasia"
+                value="{{ form.fantasia or '' }}"
+                maxlength="255"
+            >
+        </div>
+
+        <div class="col-md-6">
+            <label class="form-label" for="documento">CPF / CNPJ</label>
+            <input
+                class="form-control"
+                id="documento"
+                name="documento"
+                value="{{ form.documento or '' }}"
+                maxlength="18"
+            >
+        </div>
+    </div>
+{% endblock %}

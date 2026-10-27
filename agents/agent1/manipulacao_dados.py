@@ -107,12 +107,20 @@ SCHEMA_NOTA_FISCAL = {
                             {"type": "string"},
                             {"type": "null"}
                         ]
+                    },
+
+                    "valor": {
+                        "anyOf": [
+                            {"type": "number"},
+                            {"type": "null"}
+                        ]
                     }
                 },
 
                 "required": [
                     "numero",
-                    "dataVencimento"
+                    "dataVencimento",
+                    "valor"
                 ]
             }
         },
@@ -166,7 +174,7 @@ class Agent1:
         - Número da Nota Fiscal
         - Data de Emissão
         - Descrição de todos os produtos
-        - Parcelas e suas respectivas datas de vencimento
+        - Parcelas com suas respectivas datas de vencimento e valores
         - Valor Total da Nota Fiscal
 
         REGRAS IMPORTANTES:

@@ -14,6 +14,13 @@ from flask import (
 
 from agents.agent1.manipulacao_dados import Agent1
 from agents.agent2.classificacao import Agent2
+from cadastros import cadastros
+from database import configurar_banco
+from services.lancamento_service import (
+    DadosInvalidos,
+    analisar_dados,
+    lancar_registro
+)
 
 
 app = Flask(__name__)
@@ -27,6 +34,12 @@ app.config["APP_PASSWORD"] = os.getenv("APP_PASSWORD")
 app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 
+configurar_banco(os.getenv("DATABASE_URL"))
+
+app.register_blueprint(cadastros)
+
+ROTAS_JSON = ("/extrair", "/lancar")
+
 
 def login_obrigatorio(funcao):
     """Protege rotas que exigem uma sessao autenticada."""
@@ -34,7 +47,7 @@ def login_obrigatorio(funcao):
     @wraps(funcao)
     def funcao_protegida(*args, **kwargs):
         if not session.get("autenticado"):
-            if request.path == "/extrair":
+            if request.path in ROTAS_JSON:
                 return jsonify({
                     "erro": "Sua sess\u00e3o expirou. Fa\u00e7a login novamente."
                 }), 401
@@ -78,6 +91,7 @@ def login():
             if usuario_valido and senha_valida:
                 session.clear()
                 session["autenticado"] = True
+                session["usuario"] = usuario
 
                 return redirect(url_for("index"))
 
@@ -150,8 +164,6 @@ def extrair():
             )
         )
 
-        return jsonify(dados)
-
     except Exception:
         return jsonify({
             "erro": (
@@ -159,6 +171,45 @@ def extrair():
                 "Verifique a chave informada e tente novamente."
             )
         }), 500
+
+    try:
+        analise = analisar_dados(dados)
+    except Exception:
+        return jsonify({
+            "erro": "N\u00e3o foi poss\u00edvel consultar o banco de dados."
+        }), 500
+
+    return jsonify({
+        "dados": dados,
+        "analise": analise
+    })
+
+
+@app.route("/lancar", methods=["POST"])
+@login_obrigatorio
+def lancar():
+    corpo = request.get_json(silent=True)
+    dados = corpo.get("dados") if isinstance(corpo, dict) else None
+
+    if not isinstance(dados, dict):
+        return jsonify({
+            "erro": "Nenhum dado extra\u00eddo foi enviado."
+        }), 400
+
+    try:
+        lancar_registro(dados)
+    except DadosInvalidos as erro:
+        return jsonify({
+            "erro": str(erro)
+        }), 400
+    except Exception:
+        return jsonify({
+            "erro": "N\u00e3o foi poss\u00edvel lan\u00e7ar o registro."
+        }), 500
+
+    return jsonify({
+        "mensagem": "Registro lan\u00e7ado com sucesso."
+    })
 
 
 if __name__ == "__main__":

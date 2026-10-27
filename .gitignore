@@ -20,3 +20,6 @@ Thumbs.db
 
 # PDFs/referências locais
 Z/
+
+# Banco SQLite local
+financeiro.db

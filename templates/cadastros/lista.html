@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block titulo %}{{ config.titulo }}{% endblock %}
+
+{% block conteudo %}
+    <h2 class="titulo-pagina">{{ config.titulo }}</h2>
+
+    <section class="card shadow-sm mb-4">
+        <div class="card-header">
+            <span class="titulo-card">Buscar {{ config.titulo }}</span>
+        </div>
+
+        <div class="card-body">
+            <form class="d-flex gap-3" method="get" action="{{ request.path }}">
+                <input
+                    class="form-control"
+                    type="search"
+                    name="q"
+                    value="{{ parametros.q }}"
+                    placeholder="{{ placeholder }}"
+                    aria-label="Buscar"
+                >
+
+                <button class="btn btn-primary botao-busca" type="submit">
+                    <i class="bi bi-search"></i>
+                    <span>Buscar</span>
+                </button>
+
+                <a class="btn btn-success botao-busca" href="{{ request.path }}?todos=1">
+                    <i class="bi bi-list-ul"></i>
+                    <span>Todos</span>
+                </a>
+            </form>
+        </div>
+    </section>
+
+    <section class="card shadow-sm mb-4">
+        <div class="card-header">
+            <span class="titulo-card">Lista de {{ config.titulo }}</span>
+        </div>
+
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            {% for rotulo, chave in colunas %}
+                                <th>
+                                    {% if chave %}
+                                        {% set atual = parametros.ordem == chave %}
+                                        {% set direcao = "desc" if atual and parametros.direcao == "asc" else "asc" %}
+                                        <a
+                                            class="link-ordem"
+                                            href="{{ request.path }}?{{ {'q': parametros.q, 'todos': '1' if parametros.todos else '', 'ordem': chave, 'direcao': direcao} | urlencode }}"
+                                        >
+                                            {{ rotulo }}
+                                            {% if atual %}
+                                                <i class="bi {{ 'bi-caret-up-fill' if parametros.direcao == 'asc' else 'bi-caret-down-fill' }}"></i>
+                                            {% endif %}
+                                        </a>
+                                    {% else %}
+                                        {{ rotulo }}
+                                    {% endif %}
+                                </th>
+                            {% endfor %}
+                            <th class="text-center">A&ccedil;&otilde;es</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for linha in linhas or [] %}
+                            <tr class="{{ '' if linha.ativo else 'linha-inativa' }}">
+                                {% for valor in linha.valores %}
+                                    <td>
+                                        {{ valor }}
+                                        {% if loop.first and not linha.ativo %}
+                                            <span class="badge text-bg-secondary ms-1">INATIVO</span>
+                                        {% endif %}
+                                    </td>
+                                {% endfor %}
+
+                                <td class="text-center text-nowrap">
+                                    <a class="btn btn-sm btn-outline-primary" href="{{ linha.editar }}">
+                                        <i class="bi bi-pencil"></i> Editar
+                                    </a>
+
+                                    {% if linha.ativo %}
+                                        <form
+                                            class="d-inline"
+                                            method="post"
+                                            action="{{ linha.excluir }}"
+                                            onsubmit="return confirm('Deseja realmente excluir este registro? Ele ficar\u00e1 INATIVO.');"
+                                        >
+                                            <input type="hidden" name="retorno" value="{{ request.full_path }}">
+                                            <button class="btn btn-sm btn-outline-danger" type="submit">
+                                                <i class="bi bi-trash"></i> Excluir
+                                            </button>
+                                        </form>
+                                    {% else %}
+                                        <form class="d-inline" method="post" action="{{ linha.reativar }}">
+                                            <input type="hidden" name="retorno" value="{{ request.full_path }}">
+                                            <button class="btn btn-sm btn-outline-success" type="submit">
+                                                <i class="bi bi-arrow-counterclockwise"></i> Reativar
+                                            </button>
+                                        </form>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="{{ colunas | length + 1 }}" class="text-body-secondary">
+                                    Nenhum registro encontrado.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <div class="text-center">
+        <a class="btn btn-primary" href="{{ url_novo }}">
+            <i class="bi bi-plus-lg"></i> {{ config.novo }}
+        </a>
+    </div>
+{% endblock %}

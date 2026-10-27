@@ -11,6 +11,8 @@ const arquivoInput = document.getElementById("arquivo");
 const resultado = document.getElementById("resultado");
 const statusTexto = document.getElementById("status");
 const botao = document.getElementById("botaoExtrair");
+const analiseContainer = document.getElementById("analise");
+const statusLancamento = document.getElementById("statusLancamento");
 
 let chaveConfirmada = false;
 
@@ -49,6 +51,113 @@ botaoAlterarChave.addEventListener("click", () => {
     apiKeyInput.focus();
 });
 
+function situacao(item) {
+    return item.existe
+        ? `EXISTE \u2013 ID: ${item.id}`
+        : "N\u00c3O EXISTE";
+}
+
+function adicionarLinha(bloco, texto, negrito = false) {
+    const linha = document.createElement("p");
+
+    if (negrito) {
+        const destaque = document.createElement("strong");
+        destaque.textContent = texto;
+        linha.appendChild(destaque);
+    } else {
+        linha.textContent = texto;
+    }
+
+    bloco.appendChild(linha);
+}
+
+function criarBloco(titulo) {
+    const bloco = document.createElement("div");
+    const cabecalho = document.createElement("h3");
+
+    bloco.className = "bloco-analise";
+    cabecalho.textContent = titulo;
+    bloco.appendChild(cabecalho);
+    analiseContainer.appendChild(bloco);
+
+    return bloco;
+}
+
+function mostrarPessoa(titulo, rotuloDocumento, pessoa) {
+    const bloco = criarBloco(titulo);
+
+    adicionarLinha(
+        bloco,
+        pessoa.razaoSocial || "N\u00e3o identificado na nota"
+    );
+    adicionarLinha(
+        bloco,
+        `${rotuloDocumento}: ${pessoa.documento || "N\u00e3o informado"}`
+    );
+    adicionarLinha(bloco, situacao(pessoa), true);
+}
+
+function mostrarAnalise(analise) {
+    analiseContainer.replaceChildren();
+
+    mostrarPessoa("FORNECEDOR:", "CNPJ", analise.fornecedor);
+    mostrarPessoa("FATURADO", "CPF", analise.faturado);
+
+    const blocoDespesa = criarBloco("DESPESA");
+
+    if (analise.despesas.length === 0) {
+        adicionarLinha(
+            blocoDespesa,
+            "N\u00e3o foi poss\u00edvel classificar a despesa."
+        );
+    }
+
+    analise.despesas.forEach((despesa) => {
+        adicionarLinha(blocoDespesa, despesa.descricao);
+        adicionarLinha(blocoDespesa, situacao(despesa), true);
+    });
+}
+
+function mostrarStatusLancamento(texto, classe = "") {
+    statusLancamento.textContent = texto;
+    statusLancamento.className = `status-lancamento ${classe}`.trim();
+}
+
+async function lancarRegistro(dados) {
+    mostrarStatusLancamento("Lan\u00e7ando registro...");
+
+    try {
+        const response = await fetch("/lancar", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ dados })
+        });
+
+        const resposta = await response.json();
+
+        if (response.status === 401) {
+            window.location.href = "/login";
+            return;
+        }
+
+        if (!response.ok) {
+            throw new Error(resposta.erro);
+        }
+
+        mostrarStatusLancamento(
+            resposta.mensagem,
+            "status-chave-sucesso"
+        );
+    } catch (erro) {
+        mostrarStatusLancamento(
+            erro.message || "N\u00e3o foi poss\u00edvel lan\u00e7ar o registro.",
+            "status-chave-erro"
+        );
+    }
+}
+
 form.addEventListener("submit", async (event) => {
     event.preventDefault();
 
@@ -78,6 +187,8 @@ form.addEventListener("submit", async (event) => {
             "Processando nota fiscal...";
 
         resultado.textContent = "";
+        analiseContainer.replaceChildren();
+        mostrarStatusLancamento("");
 
         const response = await fetch("/extrair", {
             method: "POST",
@@ -101,7 +212,11 @@ form.addEventListener("submit", async (event) => {
             "Extração concluída com sucesso.";
 
         resultado.textContent =
-            JSON.stringify(dados, null, 2);
+            JSON.stringify(dados.dados, null, 2);
+
+        mostrarAnalise(dados.analise);
+
+        await lancarRegistro(dados.dados);
 
     } catch (erro) {
 
